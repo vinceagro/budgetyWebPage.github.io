@@ -20,6 +20,7 @@ const slides = document.querySelectorAll('.slide');
 const slider = document.querySelector('.slider');
 const btnLeftSlider = document.querySelector('.slider__btn--left');
 const btnRightSlider = document.querySelector('.slider__btn--right');
+const dots = document.querySelector('.dots');
 /////
 
 const openModal = e => {
@@ -134,27 +135,70 @@ imgTargeted.forEach(el => {
 });
 
 //Slider component
-let currentSlide = 0;
-let maxSlides = slides.length - 1;
-const slideImages = numSlides => {
-  slides.forEach(
-    (el, i) => (el.style.transform = `translateX(${100 * (i - numSlides)}%)`)
-  );
-};
-slideImages(0);
+const sliderComponent = () => {
+  const generateDots = () => {
+    slides.forEach((_, i) => {
+      const dot = `<button class="dots__dot" data-slide="${i}"></button>`;
+      dots.insertAdjacentHTML('beforeend', dot);
+    });
+  };
 
-const nextSlide = () => {
-  currentSlide === maxSlides ? (currentSlide = 0) : currentSlide++;
-  slideImages(currentSlide);
-};
-const prevSlide = () => {
-  currentSlide === 0 ? (currentSlide = maxSlides) : currentSlide--;
-  slideImages(currentSlide);
+  const dotsFunctionality = e => {
+    if (e.target.classList.contains('dots__dot')) {
+      const slide = e.target.dataset.slide;
+      slideImages(slide);
+      activateDot(slide);
+    }
+  };
+
+  const activateDot = slide => {
+    document
+      .querySelectorAll('.dots__dot')
+      .forEach(el => el.classList.remove('dots__dot--active'));
+
+    document
+      .querySelector(`.dots__dot[data-slide="${slide}"]`)
+      .classList.add('dots__dot--active');
+  };
+
+  let currentSlide = 0;
+  let maxSlides = slides.length - 1;
+  const slideImages = numSlides => {
+    slides.forEach((el, i) => {
+      el.style.transform = `translateX(${100 * (i - numSlides)}%)`;
+    });
+  };
+
+  const nextSlide = () => {
+    currentSlide === maxSlides ? (currentSlide = 0) : currentSlide++;
+    slideImages(currentSlide);
+    activateDot(currentSlide);
+  };
+  const prevSlide = () => {
+    currentSlide === 0 ? (currentSlide = maxSlides) : currentSlide--;
+    slideImages(currentSlide);
+    activateDot(currentSlide);
+  };
+
+  const leftRightBtns = e => {
+    if (e.key === 'ArrowLeft') prevSlide(currentSlide);
+    if (e.key === 'ArrowRight') nextSlide(currentSlide);
+  };
+
+  document.addEventListener('keydown', leftRightBtns);
+  dots.addEventListener('click', dotsFunctionality);
+  btnRightSlider.addEventListener('click', nextSlide);
+  btnLeftSlider.addEventListener('click', prevSlide);
 };
 ///
-//Listeners
-btnRightSlider.addEventListener('click', nextSlide);
-btnLeftSlider.addEventListener('click', prevSlide);
+const init = () => {
+  sliderComponent();
+  slideImages(0);
+  generateDots();
+  activateDot(0);
+};
+init();
+
 navBar.addEventListener('mouseover', e => handleHoverEffect(e, 0.5));
 navBar.addEventListener('mouseout', e => handleHoverEffect(e, 1));
 navLinks.addEventListener('click', scroll);
